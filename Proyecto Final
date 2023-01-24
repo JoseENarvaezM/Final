@@ -105,6 +105,7 @@ JULIAN CAMILO CARVAJAL MEJIA
 #define N_CS8 4435
 #define N_D8  4699
 #define N_DS8 4978
+DHTStable DHT;
 bool BandPass= false;
 bool BandConfig = false;
 int BandMonitoreo = 0;
@@ -118,6 +119,9 @@ int firstTime=0;
 int state =6;
 int i=0;
 int x=0;
+double y=0;
+int z=0;
+int tempcont=0;
 char ax [3];
 const int tempMax=125;
 const int LuzMax=1000;
@@ -141,6 +145,8 @@ char keys[ROWS][COLS] = {
   {'7','8','9','C'},
   {'*','0','#','D'}
 };
+
+
 byte rowPins[ROWS] = {9, 8, 7, 6}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {26, 27, 28,43}; //connect to the column pinouts of the keypad
 
@@ -230,20 +236,20 @@ enum State
 	Alarma = 3
 };
 
-enum Input
+enum InputState
 {
 	input_Boton = 0,
 	input_Timeout = 1,
 	input_Temp = 2,
-  input_Clave = 3;
-  input_Unknown =4 ;
+  input_Clave = 3,
+  input_Unknown =4 ,
 };
 
 // Create new StateMachine
-StateMachine stateMachine(4, 9);
+StateMachine stateMachine(4, 7);
 
 // Stores last user input
-Input input;
+InputState input;
 
 void setupStateMachine()
 {
@@ -290,31 +296,51 @@ void color (unsigned char red, unsigned char green, unsigned char blue){ // the 
 }
 void loop(){
   	// Read user input
-	input = static_cast<Input>(readInput());
+	input = static_cast<InputState>(readInput());
 	// Update State Machine
 	stateMachine.Update();
 }
-void readInput(){
-  int currentState = stateMachine.getState();
+int readInput(){
+  int currentState = stateMachine.GetState();
   switch (currentState)
   {
-    case Init: if(BandPass=true){
+    case Init: if(BandPass==true){
                  BandPass=false;
-                 input= Input::input_Clave;                 
+                 input= InputState::input_Clave;                 
                }else{
-                 input= Input::input_Unknown;
+                 input= InputState::input_Unknown;
                }
                break;
-    case Config:if(BandConfig=true){
+    case Config:if(BandConfig==true){
                   BandConfig=false;
-                  input= Input::input_Boton;
+                  input= InputState::input_Boton;
                 } else{
-                 input= Input::input_Unknown;
+                 input= InputState::input_Unknown;
                 }
                 break;
-    case Monitoreo: break;
-    case Alarma: break;
+    case Monitoreo: if(BandMonitoreo==1){
+                      BandMonitoreo=0;
+                      input= InputState::input_Boton;
+                    }else if(BandMonitoreo==2){
+                      BandMonitoreo=0;
+                      input= InputState::input_Temp;                
+                    }else{
+                      input= InputState::input_Unknown;
+                    }
+                    break;
+    case Alarma:  if(BandAlarma==1){
+                    BandAlarma=0;
+                    input= InputState::input_Timeout;
+                  }else if(BandAlarma==2){
+                    BandAlarma=0;
+                    input= InputState::input_Boton;
+                  }else{
+                    input= InputState::input_Unknown;
+                  }
+                  break;
+    default: break;
   }
+  return input;
 }
 void outputInit(){
   if(cont<3){
@@ -385,6 +411,9 @@ void outputConfig(){
           state=5;
             lcd.clear();
         }
+      }
+      if(key=='i'){
+        BandConfig=true;
       }
     }    
   }else if(state==1){
@@ -559,8 +588,35 @@ void outputConfig(){
   }
 }
 void outputMoni(){
-  
+  int chk = DHT.read11(DHT11_PIN);
+  // DISPLAY DATA
+  y = y + DHT.getTemperature();
+  z = analogRead(photocellPin);
+  tempcont++;  
+  if(tempcont==10){
+    y=y/10;
+    z=z/10;
+    tempcont=0;
+    if(y>tempH){
+      BandMonitoreo=2;
+    }
+  }
+  if(key=='i'){
+    BandAlarma=1;
+  }
 }
-void outputAlarma(){
-
+void outputAlarma(){//Cuando entra al caso alarma
+  Tiempo.Start();
+  for (int i = 0; i < 25; i++) {			// bucle repite 25 veces
+          int duracion = 1500 / duraciones[i];		// duracion de la nota en milisegundos
+          tone(buzzerPin, melodia[i], duracion);	// ejecuta el tono con la duracion
+          int pausa = duracion * 1.30;			// calcula pausa
+          delay(pausa);					// demora con valor de pausa
+          noTone(buzzerPin);          
+        }
+  if(key=='*'){
+    BandAlarma=1;
+  }else if(key=='i'){
+    BandAlarma=2;
+  }
 }

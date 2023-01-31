@@ -252,6 +252,8 @@ void ResetBand(){
   firstTime=0;
   tempcont=0;
   conteoAlarm =0;
+  y=0;
+  z=0;
 }
 //---------------------------------------------
 //Maquinas de Estados Finitos----------------------------------------------
@@ -643,10 +645,12 @@ void outputMoni(){
   if(tempcont==10){
     y=y/10;
     z=z/10;
-    tempcont=0;
     if(y>tempH){
       BandMonitoreo=2;
     }
+    tempcont=0;
+    y=0;
+    z=0;
   }
   if(key=='D'){
     BandMonitoreo=1;

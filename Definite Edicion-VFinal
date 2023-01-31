@@ -171,7 +171,7 @@ int melodia[] = {
 int duraciones[] = {		// array con la duracion de cada nota
   16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 16, 16, 8, 6, 32, 8, 8, 8, 16, 16, 16, 8, 16, 8, 8, 8, 8, 4, 16, 8, 16, 8, 8, 8, 16, 16, 16, 16, 16, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 8, 16, 16, 16, 2, 8, 16, 8, 8, 8, 8, 4, 16, 8, 16, 8, 8, 8, 8, 8, 16, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8, 15, 8, 8, 2, 3, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 8, 2, 16, 8, 16, 8, 16, 16, 16, 16, 16, 16, 8, 8, 8, 8,  8, 8, 16, 16, 16, 2, 8, 8, 8, 8, 4, 4, 4, 4, 4, 4, 2, 8, 8, 8, 8, 2, 2, 3, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 8, 2, 16, 8, 16, 8, 16, 16, 16, 16, 16, 16, 8, 8, 8, 8,  8, 8, 16, 16, 16, 2, 8, 8, 8, 8, 4, 4, 4, 4, 4, 4, 2, 8, 8, 8, 8, 2, 1
 };
-void actPanta(int a, int b){
+void actPanta(int a, int b){//Actualiza la pantalla del menu de configuracion
   if(b != 5){
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -191,7 +191,9 @@ int cont=0;
 int LongContr=0;
 char Password[5]="12345";  
 char Input[5]; 
-//
+//-------------------------------
+
+//Alarma
 void SonidoAlarma();
 AsyncTask Melodia(100,true,SonidoAlarma);
 
@@ -206,7 +208,8 @@ void SonidoAlarma(){
         color(255,0,0);
         conteoAlarm++;
 }
-
+//------------------------------------------
+//Recibe la contraseña
 void inpass(){
   key = keypad.getKey(); 
   lcd.setCursor(0,0);
@@ -239,10 +242,11 @@ void inpass(){
     }
   }  
 }
+//-------------------------------------------
 void temp(){
   key = '*';
 }
-//---------------------------------------------
+//Resetea a su valor original todas las variables necesarias para el manejo de la maquina de estados
 void ResetBand(){
   BandPass= false;
   BandConfig = false;
@@ -335,7 +339,7 @@ void loop(){
 	// Update State Machine
 	stateMachine.Update();
 }
-int readInput(){
+int readInput(){//Determina el input que realizo el usuario
   int currentState = stateMachine.GetState();
   InputState currentInput = InputState::input_Unknown;
   switch (currentState)
@@ -382,7 +386,7 @@ int readInput(){
   }
   return currentInput;
 }
-void outputInit(){
+void outputInit(){//La salida del estado Init
   if(cont<3){
     Clave.Update(); 
   }else if(cont == 3){
@@ -394,7 +398,7 @@ void outputInit(){
     BandPass=true;
   }
 }
-void outputConfig(){
+void outputConfig(){//La salida del estado Config
   if(state==0){
     if(firstTime==0){
       actPanta(0, 1);
@@ -627,7 +631,7 @@ void outputConfig(){
     point=0; 
   }
 }
-void outputMoni(){
+void outputMoni(){//La salida del estado Moni o monitoreo
   lcd.setCursor(0, 0);
   lcd.println("Monitoreo");
   char key = keypad.getKey();
